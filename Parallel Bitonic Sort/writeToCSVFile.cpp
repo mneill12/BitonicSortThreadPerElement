@@ -1,5 +1,108 @@
 #include "writeToCSVFileHeader.h"
 
+void writeSortResultsToCsv(double* timeResults, char* sortType, char* arrayStates, int* threadCounts, int* deviceBlocks, int executionCount){
+
+	struct tm *tm;
+	time_t t;
+	char str_time[100];
+	char str_date[100];
+
+	t = time(NULL);
+	tm = localtime(&t);
+
+	strftime(str_time, sizeof(str_time), "-Time-%H-%M-%S", tm);
+	strftime(str_date, sizeof(str_date), "-Date-%d-%m-%Y", tm);
+
+	char* filename = "TimedResults";
+
+	char fileDirAndName[120] = "C:/BitonicSortArrayCSVFiles/";
+	//Use array state as folder name
+	strcat(fileDirAndName, "timedResults");
+	strcat(fileDirAndName, "/");
+	strcat(fileDirAndName, filename);
+	strcat(fileDirAndName, str_date);
+	strcat(fileDirAndName, str_time);
+	strcat(fileDirAndName, ".csv");
+
+	FILE* file = fopen(fileDirAndName, "w");
+
+	//Column headers 
+	fprintf(file, "Threads, Blocks, time, result");
+
+	for (int i = 0; i < executionCount; i++){
+
+		sortType--;
+		threadCounts--;
+		deviceBlocks--;
+		timeResults--;
+		arrayStates--;
+
+		fprintf(file, "\n");
+
+		fprintf(file, "%d ", *threadCounts);
+		fprintf(file, ",%d ", *deviceBlocks);
+		fprintf(file, ",%.3fs ", *timeResults);
+
+		if (*arrayStates == 's'){
+			fprintf(file, ",sorted");
+		}
+		else if (*arrayStates == 'u'){
+			fprintf(file, ",unsorted");
+		}
+		fprintf(file, ",\n");
+	}
+
+	//Add Array State at the end
+	fprintf(file, "\n ,%d ");
+
+	fclose(file);
+}
+
+void writeSuggestedBlockThreadConfigToCsv( int* suggestedThreads, int* suggestedBlocks, int combinationsCount ){
+
+	struct tm *tm;
+	time_t t;
+	char str_time[100];
+	char str_date[100];
+
+	t = time(NULL);
+	tm = localtime(&t);
+
+	strftime(str_time, sizeof(str_time), "-Time-%H-%M-%S", tm);
+	strftime(str_date, sizeof(str_date), "-Date-%d-%m-%Y", tm);
+
+	char* filename = "suggestedBlockThreadConfig";
+
+	char fileDirAndName[120] = "C:/BitonicSortArrayCSVFiles/";
+	//Use array state as folder name
+	strcat(fileDirAndName, "blockThreadConfigs");
+	strcat(fileDirAndName, "/");
+	strcat(fileDirAndName, filename);
+	strcat(fileDirAndName, str_date);
+	strcat(fileDirAndName, str_time);
+	strcat(fileDirAndName, ".csv");
+
+	FILE* file = fopen(fileDirAndName, "w");
+
+	//Column headers 
+	fprintf(file, "BlocksCount, ThreadCount");
+
+	for (int i = 1; i <=combinationsCount ; i++){
+
+		fprintf(file, "\n");
+
+		fprintf(file, "%d ", *suggestedBlocks);
+		fprintf(file, ",%d ", *suggestedThreads);
+
+		fprintf(file, ",\n");
+
+		suggestedBlocks++ ;
+		suggestedThreads++;
+	}
+
+	fclose(file);
+}
+
 void writeArrayAsCsvFile(char* filename, char* arrayState, int* array, int arrayLength){
 
 	struct tm *tm;
@@ -40,61 +143,14 @@ void writeArrayAsCsvFile(char* filename, char* arrayState, int* array, int array
 void writeBlockElementCsvFile(int* values, char* arrayState, int threadCount, int deviceBlocks){
 
 	char* string = "SortElements%dBlocks%d";
-	char filename[28];
+	char filename[100];
 	sprintf(filename, string, threadCount, deviceBlocks);
 
 	writeArrayAsCsvFile(filename, arrayState, values, threadCount);
 
 }
 
-void writeTimeTaken(int* timeResults, int timesCount, char* sortType, char* arrayState, int* threadCounts, int* deviceBlocks){
 
-
-	char* filename = "TimedResultsFor";
-	strcat(filename, sortType);
-
-	char fileDirAndName[120] = "C:/BitonicSortArrayCSVFiles/";
-	//Use array state as folder name
-	strcat(fileDirAndName, "timedResults");
-	strcat(fileDirAndName, "/");
-	strcat(fileDirAndName, filename);
-	strcat(fileDirAndName, ".csv");
-
-	//if the file already exists we're just going to change the number at the end of the string 
-	if (fileExists(fileDirAndName)){
-
-		incrementFileId(fileDirAndName);	
-	}
-
-	FILE* file = fopen(fileDirAndName, "w");
-
-	fprintf(file, fileDirAndName);
-
-	//Column headers 
-	fprintf(file, "Sort Type, Threads, Blocks, time, result");
-
-	for (int i = 0; i < timesCount; i++){
-
-		fprintf(file, "/n,%d ", sortType);
-		fprintf(file, ",%d ", threadCounts);
-		fprintf(file, ",%d ", deviceBlocks);
-		fprintf(file, ",%d ", timeResults);
-		fprintf(file, ",%d ", arrayState);
-		sortType++;
-		threadCounts++;
-		deviceBlocks++;
-		timeResults++;
-		arrayState++;
-
-	}
-
-	//Add Array State at the end
-	fprintf(file, "\n ,%d ");
-
-	fclose(file);
-
-
-}
 
 int fileExists(const char *fileName)
 {
